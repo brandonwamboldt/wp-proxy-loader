@@ -43,3 +43,14 @@ foreach (glob(WPMU_PLUGIN_DIR . '/*') as $directory) {
     }
 }
 
+// Also add support for plugin_dir_url in MU plugins
+add_filter('plugins_url', function($url, $path, $plugin) {
+    if (strpos($plugin, 'mu-plugins') === false) {
+      return $url;
+    }
+
+    $plugin_url = WPMU_PLUGIN_URL . '/';
+    $plugin     = explode('/', dirname(str_replace(WPMU_PLUGIN_DIR, '', $plugin)));
+
+    return $plugin_url . $plugin[1] . '/' . $path;
+}, 10, 3);
