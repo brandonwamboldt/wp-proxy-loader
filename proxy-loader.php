@@ -22,6 +22,8 @@
  * IN THE SOFTWARE.
  */
 
+require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
 foreach (glob(WPMU_PLUGIN_DIR . '/*') as $directory) {
     // glob() returns both files and folders, and WordPress will already load
     // the files by itself so ignore those.
@@ -39,6 +41,15 @@ foreach (glob(WPMU_PLUGIN_DIR . '/*') as $directory) {
             require_once $pluginFilePreferred;
         } elseif (file_exists($pluginFileClassic)) {
             require_once $pluginFileClassic;
+        } else {
+            // Load regular style WordPress plugins
+            foreach (glob($directory . '/*.php') as $pluginFile) {
+                $pluginData = get_plugin_data($pluginFile);
+
+                if (!empty($pluginData['Name'])) {
+                    require_once $pluginFile;
+                }
+            }
         }
     }
 }
@@ -46,7 +57,7 @@ foreach (glob(WPMU_PLUGIN_DIR . '/*') as $directory) {
 // Also add support for plugin_dir_url in MU plugins
 add_filter('plugins_url', function($url, $path, $plugin) {
     if (strpos($plugin, 'mu-plugins') === false) {
-      return $url;
+        return $url;
     }
 
     $plugin_url = WPMU_PLUGIN_URL . '/';
